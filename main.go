@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -64,14 +65,13 @@ func LocateChrome() string {
 }
 
 func ginfunc() {
-	gin.SetMode(gin.DebugMode)
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+	router := gin.Default()
+	router.StaticFile("/", "./frontend/index.html")
+	router.POST("/interrupt", func(c *gin.Context) {
+		c.String(http.StatusOK, "OK")
+		os.Exit(1)
 	})
-	r.Run()
+	router.Run()
 	// listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
 
@@ -90,4 +90,5 @@ func main() {
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGUSR1, syscall.SIGUSR2)
 	<-c
 	chrome.Process.Kill()
+	os.Exit(1)
 }

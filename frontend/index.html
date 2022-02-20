@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        h1 {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<h1>Jacky Demo</h1>
+<script>
+    window.onbeforeunload = function (event) {
+        event.preventDefault();
+        navigator.sendBeacon('http://127.0.0.1:8080/interrupt', '');
+        event.returnValue = '';
+    };
+</script>
+</body>
+</html>
