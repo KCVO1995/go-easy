@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"github.com/gin-gonic/gin"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
@@ -64,13 +66,23 @@ func LocateChrome() string {
 	return ""
 }
 
+//go:embed frontend/dist/*
+var FS embed.FS
+
 func ginfunc() {
 	router := gin.Default()
-	router.StaticFile("/", "./frontend/index.html")
+
+	staticFiles, _ := fs.Sub(FS, "frontend/dist")
+	router.StaticFS("/", http.FS(staticFiles))
+
 	router.POST("/interrupt", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
 		os.Exit(1)
 	})
+	//router.NoRoute(func(context *gin.Context) {
+	//
+	//})
+	router.NoRoute()
 	router.Run()
 	// listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
