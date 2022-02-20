@@ -4,11 +4,13 @@ import (
 	"embed"
 	"github.com/gin-gonic/gin"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 )
 
@@ -79,10 +81,23 @@ func ginfunc() {
 		c.String(http.StatusOK, "OK")
 		os.Exit(1)
 	})
-	//router.NoRoute(func(context *gin.Context) {
-	//
-	//})
-	router.NoRoute()
+	router.NoRoute(func(context *gin.Context) {
+		path := context.Request.URL.Path
+		if !strings.HasPrefix(path, "/api") {
+			file, err := staticFiles.Open("index.html")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+			stat, err := file.Stat()
+			if err != nil {
+				log.Fatal(err)
+			}
+			context.DataFromReader(http.StatusOK, stat.Size(), "text/html", file, nil)
+		} else {
+			context.Status(http.StatusNotFound)
+		}
+	})
 	router.Run()
 	// listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
@@ -96,7 +111,7 @@ func startChrome(url string) *exec.Cmd {
 
 func main() {
 	go ginfunc()
-	chrome := startChrome("http://127.0.0.1:8080")
+	chrome := startChrome("http://127.0.0.1:8080/api/xxx")
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGUSR1, syscall.SIGUSR2)
