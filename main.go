@@ -111,7 +111,7 @@ func startChrome(url string) *exec.Cmd {
 
 func main() {
 	go ginfunc()
-	chrome := startChrome("http://127.0.0.1:8080/api/xxx")
+	chrome := startChrome("http://127.0.0.1:8080/")
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGUSR1, syscall.SIGUSR2)
