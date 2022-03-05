@@ -2,16 +2,18 @@ package main
 
 import (
 	"embed"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/webview/webview"
 	"io/fs"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/webview/webview"
 )
 
 //go:embed frontend/dist/*
@@ -20,18 +22,15 @@ var FS embed.FS
 func ginFunc() {
 	router := gin.Default()
 
-	staticFiles, _ := fs.Sub(FS, "frontend/dist")
-	router.StaticFS("/", http.FS(staticFiles))
-
-	router.POST("/interrupt", func(c *gin.Context) {
-		c.String(http.StatusOK, "OK")
-		os.Exit(1)
-	})
-
+	router.GET("/api/v1/addresses", AddressesController)
 	router.POST("/api/v1/texts", TextsController)
+
+	staticFiles, _ := fs.Sub(FS, "frontend/dist")
+	router.StaticFS("/static", http.FS(staticFiles))
+
 	router.NoRoute(func(context *gin.Context) {
 		path := context.Request.URL.Path
-		if !strings.HasPrefix(path, "/api") {
+		if strings.HasPrefix(path, "/static") {
 			file, err := staticFiles.Open("index.html")
 			if err != nil {
 				log.Fatal(err)
@@ -55,7 +54,7 @@ func main() {
 	defer w.Destroy()
 	w.SetTitle("GoEasy")
 	w.SetSize(800, 600, webview.HintNone)
-	w.Navigate("http://127.0.0.1:8080")
+	w.Navigate("http://127.0.0.1:8080/static")
 	w.Run()
 }
 
@@ -99,6 +98,15 @@ func TextsController(c *gin.Context) {
 
 }
 
-func NoRouteController() {
-
+func AddressesController(c *gin.Context) {
+	// 获取电脑端所有 ip 地址
+	// 通过 json 返回给前端
+	addrs, _ := net.InterfaceAddrs()
+	var result []string
+	for _, address := range addrs {
+		if ipNet, ok := address.(*net.IPNet); ok && (ipNet.IP.IsLoopback()) {
+			result = append(result, ipNet.IP.String())
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"addresses": result})
 }

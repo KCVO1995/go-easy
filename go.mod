@@ -16,7 +16,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
-	github.com/webview/webview v0.0.0-20220214200855-c1b2cc1106d7 // indirect
+	github.com/webview/webview v0.0.0-20220228175528-9bda02f8085c // indirect
 	github.com/zserge/lorca v0.1.10 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
