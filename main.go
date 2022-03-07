@@ -10,10 +10,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/webview/webview"
+	"github.com/skip2/go-qrcode"
 )
 
 //go:embed frontend/dist/*
@@ -24,6 +24,7 @@ func ginFunc() {
 
 	router.GET("/api/v1/addresses", AddressesController)
 	router.GET("/uploads/:path", UploadsController)
+	router.GET("/api/v1/qrcodes", QrcodesController)
 	router.POST("/api/v1/texts", TextsController)
 
 	staticFiles, _ := fs.Sub(FS, "frontend/dist")
@@ -138,5 +139,20 @@ func UploadsController(c *gin.Context) {
 		c.File(target)
 	} else {
 		c.Status(http.StatusNotFound)
+	}
+}
+
+func QrcodesController (c * gin.Context) {
+	// 获取文本内容
+	// 将文本转为图片
+	// 将图片写入 HTTP 响应
+	if content := c.Query("content"); content != "" {
+		qrcode, err := qrcode.Encode(content, qrcode.Medium, 256)
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.Data(http.StatusOK, "image/png", qrcode)
+	} else {
+		c.Status(http.StatusBadRequest)
 	}
 }
